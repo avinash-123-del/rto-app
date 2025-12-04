@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Link, router } from 'expo-router';
-import { useAuth } from '../../src/contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { Link, router } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
@@ -19,6 +20,17 @@ export default function RegisterScreen() {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+     if (mobile.length ===10 && !/^[6-9]\d{9}$/.test(mobile)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
 
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
@@ -33,10 +45,10 @@ export default function RegisterScreen() {
     setLoading(true);
     try {
       await register({
-        userName: name,
-        userEmail: email,
-        userMobile: mobile,
-        userPassword: password,
+        fullName: name,
+        email: email,
+        phoneNumber: mobile,
+        password,
       });
       router.replace('/(tabs)');
     } catch (error) {
@@ -47,14 +59,13 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1"
+      <KeyboardAwareScrollView
+      enableOnAndroid={true}
+      extraScrollHeight={20}
+      contentContainerStyle={{ flexGrow: 1 }}
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView className="flex-1 bg-white">
         <View className="flex-1 bg-white px-6 py-10">
           <View className="items-center mb-8">
             <View className="w-16 h-16 bg-blue-500 rounded-full items-center justify-center mb-3">
@@ -87,8 +98,6 @@ export default function RegisterScreen() {
                 placeholder="Enter your email"
                 value={email}
                 onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
                 autoComplete="email"
               />
             </View>
@@ -167,6 +176,6 @@ export default function RegisterScreen() {
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }
